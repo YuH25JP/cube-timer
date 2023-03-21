@@ -3,14 +3,18 @@ import { randomScrambleForEvent } from "https://cdn.cubing.net/js/cubing/scrambl
 const time = document.getElementById('time');
 const scramble = document.getElementById('scramble');
 document.addEventListener('keydown', keydownEvent, false);
+document.addEventListener('keyup', keyupEvent, false);
 
 var isStarted = false;
 
 var startTime;
 var stopTime;
+var rightAfterStop = false;
+var holdTime = 0.3;
+var heldOver = false;
 var timeoutID;
 
-scramble.innerHTML = String(await randomScrambleForEvent('333'));
+scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
 
 function displayTime() {
     const dt = new Date(Date.now() - startTime);
@@ -21,21 +25,27 @@ function displayTime() {
     timeoutID = setTimeout(displayTime, 10);
 }
 
-async function keydownEvent(e) {
-    if (!isStarted && e.key === ' ') {
-        isStarted = true;
-
-        startTime = Date.now();
-        displayTime();
-    } else if (isStarted) {
+async function keydownEvent(e) { // stop timer by keydown
+    if (isStarted) {
         stopTime = Date.now();
         isStarted = false;
+        rightAfterStop = true;
         clearTimeout(timeoutID);
         // re-calculating/rendering the final result
         const res = new Date(stopTime - startTime);
         const s = String(res.getMinutes()*60 + res.getSeconds());
         const millis = String(res.getMilliseconds()).padEnd(3, '0');
         time.textContent = `${s}.${millis}`;
-        scramble.innerHTML = String(await randomScrambleForEvent('333'));
+        scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
+    }
+}
+
+function keyupEvent(e) { // start timer by keyup
+    if (!isStarted && !rightAfterStop && e.key === ' ') {
+        isStarted = true;
+        startTime = Date.now();
+        displayTime();
+    } else if (rightAfterStop) {
+        rightAfterStop = false;
     }
 }
