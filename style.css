@@ -11,6 +11,7 @@ body {
     font-family: monospace;
     font-size: 25px;
     background-color: goldenrod;
+    border-radius: 4px;
     padding: 2px;
     margin-bottom: 1em;
     text-align: center;
@@ -18,6 +19,7 @@ body {
 
 #timer {
     background-color: seagreen;
+    border-radius: 4px;
     font-family: monospace;
     text-align: center;
     width: 50%;
@@ -28,4 +30,14 @@ body {
 
 #time {
     font-size: 70px;
+}
+
+#analysisArea {
+    background-color: deepskyblue;
+    width: 50%;
+    margin: 0 auto;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 20px;
+    text-align: center;
 }

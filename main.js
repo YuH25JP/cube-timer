@@ -14,6 +14,8 @@ var holdTime = 0.3;
 var heldOver = false;
 var timeoutID;
 
+var array = [];
+
 scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
 
 function displayTime() {
@@ -23,6 +25,38 @@ function displayTime() {
 
     time.textContent = `${s}.${millis}`;
     timeoutID = setTimeout(displayTime, 10);
+}
+
+function addTimeToStorage(scramble, result) {
+    Number(result);
+    array.push(
+        {
+            time: result,
+            scramble: scramble,
+        }
+    );
+    const jsonString = JSON.stringify(array);
+    localStorage.setItem('time-data', jsonString);
+}
+
+function getData() {
+    const jsonString = localStorage.getItem('time-data');
+    return JSON.parse(jsonString);
+}
+
+function calculateAverageOf(x) {
+    var res = `ao${x}: `;
+    const dataArray = getData();
+    const lengthOfDataArray = dataArray.length;
+    if (lengthOfDataArray < x) {
+        return res + '-';
+    } else {
+        var sum = 0;
+        for (let i = 0; i < x; i++) {
+            sum += Number(dataArray[lengthOfDataArray - i - 1].time);
+        }
+        return res + sum / x;
+    }
 }
 
 async function keydownEvent(e) { // stop timer by keydown
@@ -36,6 +70,11 @@ async function keydownEvent(e) { // stop timer by keydown
         const s = String(res.getMinutes()*60 + res.getSeconds());
         const millis = String(res.getMilliseconds()).padEnd(3, '0');
         time.textContent = `${s}.${millis}`;
+
+        addTimeToStorage(scramble.innerHTML.replace('Scramble: ', ''), `${s}.${millis}`);
+        document.getElementById('ao5').innerHTML = calculateAverageOf(5);
+        //console.log(calculateAverageOf(5));
+
         scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
     }
 }
