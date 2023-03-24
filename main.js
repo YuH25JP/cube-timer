@@ -74,14 +74,16 @@ async function keydownEvent(e) { // stop timer by keydown
 
         addTimeToStorage(scramble.innerHTML.replace('Scramble: ', ''), `${s}.${millis}`);
         document.getElementById('ao5').innerHTML = calculateAverageOf(5);
-        //console.log(calculateAverageOf(5));
 
         scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
+    } else if (!rightAfterStop && e.key === ' ') {
+        time.style.color = 'red'; // turn the timer color into red while space key is pressed
     }
 }
 
 function keyupEvent(e) { // start timer by keyup
     if (!isStarted && !rightAfterStop && e.key === ' ') {
+        time.style.color = 'black'; // turn the timer color back into black right after stopped
         isStarted = true;
         startTime = Date.now();
         displayTime();
