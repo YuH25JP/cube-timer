@@ -55,7 +55,8 @@ function calculateAverageOf(x) {
         for (let i = 0; i < x; i++) {
             sum += Number(dataArray[lengthOfDataArray - i - 1].time);
         }
-        return res + sum / x;
+        sum = Math.round((sum / x) * 1000) / 1000;
+        return res + sum;
     }
 }
 
