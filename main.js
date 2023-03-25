@@ -17,7 +17,18 @@ var inspectionTime = 15;
 var inspectionCompleted = false;
 var timeoutID;
 
-var array = [];
+var array;
+
+window.onload = () => {
+    // if 'time-data' does not exist in local storage, array is initialized with empty array
+    // otherwise, existing data in local storage is passed to array
+    if (localStorage.getItem('time-data') == null) {
+        console.log('time-data is null');
+        array = [];
+    } else {
+        array = getData();
+    }
+}
 
 scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
 
