@@ -12,6 +12,9 @@ var stopTime;
 var rightAfterStop = false;
 var holdTime = 0.3;
 var heldOver = false;
+var beingHeld = false;
+var inspectionTime = 15;
+var inspectionCompleted = false;
 var timeoutID;
 
 var array = [];
@@ -25,6 +28,17 @@ function displayTime() {
 
     time.textContent = `${s}.${millis}`;
     timeoutID = setTimeout(displayTime, 10);
+}
+
+function countHold(holdStartTime) {
+    const dt = new Date(Date.now() - holdStartTime);
+    const s = String(dt.getSeconds());
+    if (Number(s) >= holdTime) {
+        heldOver = true;
+        return;
+    } else {
+        timeoutID = setTimeout(countHold, 1000);
+    }
 }
 
 function addTimeToStorage(scramble, result) {
@@ -65,7 +79,9 @@ async function keydownEvent(e) { // stop timer by keydown
         stopTime = Date.now();
         isStarted = false;
         rightAfterStop = true;
+        heldOver = false;
         clearTimeout(timeoutID);
+
         // re-calculating/rendering the final result
         const res = new Date(stopTime - startTime);
         const s = String(res.getMinutes()*60 + res.getSeconds());
@@ -76,14 +92,23 @@ async function keydownEvent(e) { // stop timer by keydown
         document.getElementById('ao5').innerHTML = calculateAverageOf(5);
 
         scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
-    } else if (!rightAfterStop && e.key === ' ') {
+    } else if (!rightAfterStop && e.key === ' ' && !beingHeld) {
         time.style.color = 'red'; // turn the timer color into red while space key is pressed
+        beingHeld = true;
+        timeoutID = setTimeout(() => {
+            time.style.color = 'green';
+            heldOver = true;
+        }, holdTime * 1000);
     }
 }
 
 function keyupEvent(e) { // start timer by keyup
-    if (!isStarted && !rightAfterStop && e.key === ' ') {
-        time.style.color = 'black'; // turn the timer color back into black right after stopped
+    if (beingHeld) { beingHeld = false; }
+    if (!isStarted && !heldOver && !rightAfterStop && e.key === ' ') {
+        clearTimeout(timeoutID);
+        time.style.color = 'black';
+    } else if (!isStarted && heldOver && !rightAfterStop && e.key === ' ') {
+        time.style.color = 'black'; // turn the timer color back into black right after started
         isStarted = true;
         startTime = Date.now();
         displayTime();
