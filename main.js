@@ -2,6 +2,7 @@ import { randomScrambleForEvent } from "https://cdn.cubing.net/js/cubing/scrambl
 
 const time = document.getElementById('time');
 const scramble = document.getElementById('scramble');
+const historyArea = document.getElementById('historyArea');
 document.addEventListener('keydown', keydownEvent, false);
 document.addEventListener('keyup', keyupEvent, false);
 
@@ -18,7 +19,9 @@ var inspectionCompleted = false;
 var timeoutID;
 
 var array;
+var index;
 
+// 
 window.onload = () => {
     // if 'time-data' does not exist in local storage, array is initialized with empty array
     // otherwise, existing data in local storage is passed to array
@@ -27,7 +30,13 @@ window.onload = () => {
         array = [];
     } else {
         array = getData();
+        // all the existing histories are added to historyArea
+        for (const obj of array) {
+            addTimeToHistoryArea(obj);
+        }
+        document.getElementById('ao5').innerHTML = calculateAverageOf(5);
     }
+    index = array.length + 1;
 }
 
 scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
@@ -41,27 +50,17 @@ function displayTime() {
     timeoutID = setTimeout(displayTime, 10);
 }
 
-function countHold(holdStartTime) {
-    const dt = new Date(Date.now() - holdStartTime);
-    const s = String(dt.getSeconds());
-    if (Number(s) >= holdTime) {
-        heldOver = true;
-        return;
-    } else {
-        timeoutID = setTimeout(countHold, 1000);
-    }
-}
-
-function addTimeToStorage(scramble, result) {
-    Number(result);
-    array.push(
-        {
-            time: result,
-            scramble: scramble,
-        }
-    );
+function addTimeToStorage(obj) {
+    array.push(obj);
     const jsonString = JSON.stringify(array);
     localStorage.setItem('time-data', jsonString);
+}
+
+function addTimeToHistoryArea(obj) {
+    var new_element = document.createElement('p');
+    new_element.className = 'history';
+    new_element.textContent = obj.time;
+    historyArea.prepend(new_element);
 }
 
 function getData() {
@@ -78,7 +77,7 @@ function calculateAverageOf(x) {
     } else {
         var sum = 0;
         for (let i = 0; i < x; i++) {
-            sum += Number(dataArray[lengthOfDataArray - i - 1].time);
+            sum += dataArray[lengthOfDataArray - i - 1].time;
         }
         sum = Math.round((sum / x) * 1000) / 1000;
         return res + sum;
@@ -98,10 +97,16 @@ async function keydownEvent(e) { // stop timer by keydown
         const s = String(res.getMinutes()*60 + res.getSeconds());
         const millis = String(res.getMilliseconds()).padEnd(3, '0');
         time.textContent = `${s}.${millis}`;
+        const obj = {
+            index: index,
+            time: Number(`${s}.${millis}`),
+            scramble: scramble.innerHTML.replace('Scramble: ', ''),
+        }
 
-        addTimeToStorage(scramble.innerHTML.replace('Scramble: ', ''), `${s}.${millis}`);
+        addTimeToStorage(obj);
+        addTimeToHistoryArea(obj);
         document.getElementById('ao5').innerHTML = calculateAverageOf(5);
-
+        index += 1;
         scramble.innerHTML = "Scramble: " + String(await randomScrambleForEvent('333'));
     } else if (!rightAfterStop && e.key === ' ' && !beingHeld) {
         time.style.color = 'red'; // turn the timer color into red while space key is pressed
